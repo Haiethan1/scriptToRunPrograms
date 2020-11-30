@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+INSTALL_DIR=/home/user/etc
+PROJECT_NAME=circle-world
+INSTALL_BIN=/home/user/bin
+BIN_NAME=circle-world
+export PATH="$PATH:$INSTALL_DIR"
+
+Install()
+{
+    # make folder for install 
+    mkdir -p $INSTALL_DIR/$PROJECT_NAME 
+    mkdir -p $INSTALL_BIN
+
+    # put out bin into bin
+    cp $BIN_NAME $INSTALL_BIN/
+
+    # put all install files in etc
+    cp -r * $INSTALL_DIR/$PROJECT_NAME/
+
+    export PATH="$PATH:$INSTALL_BIN"
+}
+
+Uninstall()
+{
+    rm -r $INSTALL_DIR/$PROJECT_NAME
+    rm -r $INSTALL_BIN/$BIN_NAME
+}
+
+Stop()
+{
+    cat "0" > /tmp/$PROJECT_NAME
+    ./rmRobot.sh
+    ./rmBox.sh
+}
+
+Start()
+{
+    cat "1" > /tmp/$PROJECT_NAME
+    cd $INSTALL_DIR/$PROJECT_NAME
+    ./loadRobot.sh # this spawns the robot..
+    echo "==== Robot Loaded ===="
+
+    if [ -z "$1" ]
+    then
+        echo "No Box Dropped"
+        exit 0
+    fi
+
+    if [ $1 -gt 0 ]
+    then
+        cd src
+        ./drop_box.sh
+        cd ..
+        echo "==== Dropped a box ===="
+    fi
+}
+
+Status()
+{
+    echo $(cat /tmp/$PROJECT_NAME)
+}
+
+Help()
+{
+    echo ' '
+    echo ' '
+    echo ' '
+    echo '---------------------------------------'
+    echo '------------ circle-world -------------'
+    echo '---------------------------------------'
+    echo 'install           : Install the program'
+    echo 'uninstall         : Removes the project'
+    echo 'start             : Starts the program'
+    echo 'stop              : Stops the program'
+    echo 'status            : Shows status of system'
+    echo 'help              : Shows this dialog'
+    echo ' '
+    echo ' '
+    exit 0
+}
+
+
+
+
+case $1 in 
+'install')
+    Install
+    ;;
+'uninstall')
+    Uninstall
+    ;;
+'help')
+    Help
+    ;;
+'start')
+    Start $2
+    ;;
+'stop')
+    Stop
+    ;;
+'status')
+    Status
+    ;;
+*)
+    Help
+    ;;
+    esac
+exit 0
